@@ -1,0 +1,60 @@
+import tkinter as tk
+import threading
+import speech_recognition as sr
+from intent import detect_intent
+from parser import extract_alarm_time, extract_goal
+from scheduler import schedule_alarm
+
+def listen_and_handle():
+    r = sr.Recognizer()
+
+    with sr.Microphone() as source:
+        status_label.config(text="🎤 Listening...")
+        audio = r.listen(source)
+
+    try:
+        text = r.recognize_google(audio)
+        intent = detect_intent(text)
+
+        status_label.config(text=f"You said: {text}")
+
+        if intent == "alarm":
+            alarm_time = extract_alarm_time(text)
+            if alarm_time:
+                schedule_alarm(alarm_time)
+                status_label.config(
+                    text=f"⏰ Alarm set for {alarm_time.strftime('%I:%M %p')}"
+                )
+            else:
+                status_label.config(text="❌ Could not understand time")
+
+        elif intent == "goal":
+            goal = extract_goal(text)
+            status_label.config(text=f"🎯 Goal: {goal}")
+
+        else:
+            status_label.config(text="❓ I didn't understand")
+
+    except Exception as e:
+        status_label.config(text="⚠️ Error listening")
+        print(e)
+
+def start_listening():
+    threading.Thread(target=listen_and_handle, daemon=True).start()
+
+root = tk.Tk()
+root.title("Personal Assistant")
+root.geometry("400x200")
+
+listen_button = tk.Button(
+    root,
+    text="🎤 Listen",
+    command=start_listening,
+    font=("Arial", 14)
+)
+listen_button.pack(pady=20)
+
+status_label = tk.Label(root, text="Ready", wraplength=350)
+status_label.pack(pady=10)
+
+root.mainloop()

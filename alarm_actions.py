@@ -11,6 +11,10 @@ def trigger_alarm():
         duration=5,
         threaded=True
     )
-    time.sleep(5)  # Wait a moment to ensure the notification is shown
+    winsound.PlaySound(
+        "SystemExclamation",
+        winsound.SND_ALIAS | winsound.SND_ASYNC
+    )
 
-winsound.Beep(1000, 1000)  # Beep at 1000 Hz for 1 second
+    return 0
+
