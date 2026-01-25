@@ -9,6 +9,8 @@ def detect_intent(text):
         return "reminder"
     elif "what are my goals" in text:
         return "query_goals"
+    elif "what are my reminders" in text:
+        return "query_reminders"
     else:
         return "unknown"
     

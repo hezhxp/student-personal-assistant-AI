@@ -46,3 +46,33 @@ def extract_goal(text):
             return text.replace(t, "").strip()
 
     return None
+
+def extract_reminder_time(text):
+    match = re.search(r'(\d{1,2})(?::(\d{2}))?\s*(a\.?m\.?|p\.?m\.?)', text)
+    
+    if match:
+        hour = int(match.group(1))
+        minute = int(match.group(2)) if match.group(2) else 0
+        period = match.group(3)
+
+        if "p" in period and hour != 12:
+            hour += 12
+
+        if "a" in period and hour == 12:
+            hour = 0
+        
+        now = datetime.now()
+        reminder_time = now.replace(hour = hour, minute = minute, second = 0)
+
+        if reminder_time < now:
+            reminder_time += timedelta(days=1)
+
+        return reminder_time
+    return None
+
+def extract_reminder_message(text):
+    text = text.lower()
+
+    if "to" in text:
+        return text.split("to", 1)[1].strip()
+    return None

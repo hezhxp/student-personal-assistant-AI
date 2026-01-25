@@ -3,9 +3,9 @@ import tkinter as tk
 import threading
 import speech_recognition as sr
 from intent import detect_intent
-from parser import extract_alarm_time, extract_goal
-from scheduler import schedule_alarm, snooze_alarm
-from alarm_actions import start_alarm_loop, stop_alarm
+from parser import extract_alarm_time, extract_goal, extract_reminder_time, extract_reminder_message
+from scheduler import schedule_alarm, snooze_alarm, schedule_reminder
+from actions import start_alarm_loop, stop_alarm
 
 def listen_and_handle():
     r = sr.Recognizer()
@@ -36,9 +36,16 @@ def listen_and_handle():
             else:
                 status_label.config(text="❌ Could not understand time")
 
-        elif intent == "goal":
-            goal = extract_goal(text)
-            status_label.config(text=f"🎯 Goal: {goal}")
+        elif intent == "reminder":
+            reminder_time = extract_reminder_time(text)
+            reminder_message = extract_reminder_message(text)
+            if reminder_time and reminder_message:
+                schedule_reminder(reminder_time, reminder_message)
+                status_label.config(
+                    text=f"⏰ Reminder set for {reminder_time.strftime('%I:%M %p')}: {reminder_message}"
+                )
+            else:
+                status_label.config(text="❌ Could not understand reminder")
 
         else:
             status_label.config(text="❓ I didn't understand")
