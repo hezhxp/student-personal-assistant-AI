@@ -49,3 +49,15 @@ def start_alarm_loop():
 def stop_alarm():
     _alarm_stop_event.set()
     winsound.PlaySound(None, winsound.SND_PURGE)
+
+def trigger_reminder(message):
+    toaster.show_toast(
+        "Reminder",
+        message,
+        duration=5,
+        threaded=True
+    )
+    winsound.PlaySound(
+            "SystemExclamation",
+            winsound.SND_ALIAS | winsound.SND_ASYNC
+    )
