@@ -48,6 +48,11 @@ def extract_goal(text):
     return None
 
 def extract_reminder_time(text):
+    match = re.search(r'in (\d+) minute', text)
+    if match:
+        minutes = int(match.group(1))
+        return datetime.now() + timedelta(minutes=minutes)
+
     match = re.search(r'(\d{1,2})(?::(\d{2}))?\s*(a\.?m\.?|p\.?m\.?)', text)
     
     if match:
