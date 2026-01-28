@@ -6,6 +6,8 @@ from intent import detect_intent
 from parser import extract_alarm_time, extract_goal, extract_reminder_time, extract_reminder_message
 from scheduler import schedule_alarm, snooze_alarm, schedule_reminder
 from actions import start_alarm_loop, stop_alarm
+from db import init_db,add_goal, list_goals, clear_goals
+init_db()
 
 def listen_and_handle():
     r = sr.Recognizer()
@@ -18,6 +20,7 @@ def listen_and_handle():
         text = r.recognize_google(audio)
         intent = detect_intent(text)
 
+        #alarm
         status_label.config(text=f"You said: {text}")
 
         if text == ("stop alarm" or "stop the alarm" or "turn off alarm"):
@@ -36,6 +39,7 @@ def listen_and_handle():
             else:
                 status_label.config(text="❌ Could not understand time")
 
+        #reminder
         elif intent == "reminder":
             reminder_time = extract_reminder_time(text)
             reminder_message = extract_reminder_message(text)
@@ -47,8 +51,31 @@ def listen_and_handle():
             else:
                 status_label.config(text="❌ Could not understand reminder")
 
+        #goals
+        elif intent == "goal":
+            goal = extract_goal(text)
+            if goal:
+                add_goal(goal)
+                status_label.config(text=f"🎯 Goal added: {goal}")
+            else:
+                status_label.config(text="❌ I couldn't find the goal text.")
+
+        elif intent == "query_goals":
+            goals = list_goals(include_done=False)
+            if not goals:
+                update_goals_box("📋 No goals saved.")
+            else:
+                lines = []
+                for i, (gid, text, created, done) in enumerate(goals, start=1):
+                    lines.append(f"{i}. {text}")
+
+                update_goals_box("📋 Goals:\n" + "\n".join(lines))
+
+        elif intent == "clear_goals":
+            clear_goals()
+            status_label.config(text="🗑️ All goals cleared.")
         else:
-            status_label.config(text="❓ I didn't understand")
+            update_goals_box("🧹 Goals cleared.")
 
     except Exception as e:
         status_label.config(text="⚠️ Error listening")
@@ -70,6 +97,13 @@ def on_snooze(time):
 def stop_the_alarm():
     stop_alarm()
     status_label.config(text="⏹️ Alarm stopped")
+
+def update_goals_box(text: str):
+    goals_text.config(state="normal")
+    goals_text.delete("1.0", tk.END)
+    goals_text.insert(tk.END, text)
+    goals_text.config(state="disabled")
+
 
 listen_button = tk.Button(
     root,
@@ -95,7 +129,17 @@ snooze_button = tk.Button(
 )
 snooze_button.pack(pady=10)
 
+
+
 status_label = tk.Label(root, text="Ready", wraplength=350)
 status_label.pack(pady=10)
+goals_text = tk.Text(
+    root,
+    height=6,
+    width=45,
+    wrap="word"
+)
+goals_text.pack(pady=10)
+goals_text.config(state="disabled")
 
 root.mainloop()

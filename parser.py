@@ -35,10 +35,10 @@ def extract_alarm_time(text):
 
 def extract_goal(text):
     triggers = [
-        "set goals for today to",
-        "set goal for today to",
-        "set goals to",
-        "set goal to"
+        "set task for today",
+        "set tasks for today",
+        "set tasks to",
+        "set task to"
     ]
 
     for t in triggers:
